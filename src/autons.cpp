@@ -17,9 +17,9 @@ void default_constants() {
   // P, I, D, and Start I
   chassis.pid_drive_constants_set(14.5, 0.0, 100);         // Fwd/rev constants, used for odom and non odom motions
   chassis.pid_heading_constants_set(11.0, 0.0, 20.0);        // Holds the robot straight while going forward without odom
-  chassis.pid_turn_constants_set(8, 0.05, 50, 15.0);     // Turn in place constants
+  chassis.pid_turn_constants_set(8, 0.05, 65, 15.0);     // Turn in place constants
   chassis.pid_swing_constants_set(6.0, 0.0, 65.0);           // Swing constants
-  chassis.pid_odom_angular_constants_set(6.5, 0.0, 52.5);    // Angular control for odom motions
+  chassis.pid_odom_angular_constants_set(15, 0.0, 100);    // Angular control for odom motions
   chassis.pid_odom_boomerang_constants_set(5.8, 0.0, 32.5);  // Angular control for boomerang motions
 
   // Exit conditions
@@ -39,7 +39,7 @@ void default_constants() {
 
   // The amount that turns are prioritized over driving in odom motions
   // - if you have tracking wheels, you can run this higher.  1.0 is the max
-  chassis.odom_turn_bias_set(0.9);
+  chassis.odom_turn_bias_set(0.99);
 
   chassis.odom_look_ahead_set(10_in);           // This is how far ahead in the path the robot looks at
   chassis.odom_boomerang_distance_set(16_in);  // This sets the maximum distance away from target that the carrot point can be
@@ -56,15 +56,93 @@ void drive_example() {
   // The second parameter is max speed the robot will drive at
   // The third parameter is a boolean (true or false) for enabling/disabling a slew at the start of drive motions
   // for slew, only enable it when the drive distance is greater than the slew distance + a few inches
-
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  /*
+  redirect.set_value(false);
+  hood.move(-127);
+  intake.move(127);
+  chassis.pid_drive_set(12_in, 70);
+  chassis.pid_wait_quick_chain(); 
+  chassis.pid_swing_set(ez::LEFT_SWING, 135_deg, 85);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(23.25_in, 70, true);
   chassis.pid_wait();
-
-  chassis.pid_drive_set(-12_in, DRIVE_SPEED);
+  matchLoads.set_value(false);
+  chassis.pid_swing_set(ez::LEFT_SWING, 180_deg, 80);
   chassis.pid_wait();
-
-  chassis.pid_drive_set(-12_in, DRIVE_SPEED);
+  pros::delay(200);
+  chassis.pid_drive_set(8_in, 90, true);
   chassis.pid_wait();
+  pros::delay(200);
+  chassis.pid_drive_set(-8_in, 90, true);
+  matchLoads.set_value(true);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(0_deg, 95);
+  chassis.pid_wait();
+  */
+  redirect.set_value(false);
+  hood.move(-127);
+  intake.move(127);
+  chassis.pid_drive_set(12_in, 70);
+  chassis.pid_wait_quick_chain(); 
+  chassis.pid_swing_set(ez::LEFT_SWING, 135_deg, 85);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(23.25_in, 70, true);
+  chassis.pid_wait();
+  matchLoads.set_value(false);
+  chassis.pid_swing_set(ez::LEFT_SWING, 181_deg, 80);
+  chassis.pid_wait();
+  pros::delay(200);
+  chassis.pid_drive_set(8.88_in, 90, true);
+  chassis.pid_wait();
+  pros::delay(400);
+  chassis.pid_drive_set(-8.85_in, 90, true);
+  matchLoads.set_value(true);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-3.10_deg, 95);
+  chassis.pid_wait();
+  chassis.pid_drive_set(8.125_in, 90, true);
+  redirect.set_value(true);
+  hopper.move_velocity(127);
+  chassis.pid_wait();
+  pros::delay(3000);
+  chassis.pid_swing_set(ez::LEFT_SWING, -75_deg, 90);
+  chassis.pid_wait();
+  chassis.pid_drive_set(50.25_in, 90, true);
+  chassis.pid_wait_quick();
+  hood.move(-127);
+  intake.move(127);
+  redirect.set_value(false);
+  chassis.pid_drive_set(25_in, 45, true);
+  chassis.pid_wait();
+  chassis.pid_turn_set(46.25_deg, 95);
+  chassis.pid_wait();
+  chassis.pid_drive_set(8.5_in, 90, true);
+  chassis.pid_wait();
+  hood.move(127);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  // Reset gyro position to 0
+
+  
+
+
+
+
+
+
+
 }
 
 ///
@@ -239,7 +317,8 @@ void interfered_example() {
 ///
 // Odom Drive PID
 ///
-void odom_drive_example() {
+void odom_drive_example() 
+{
   // This works the same as pid_drive_set, but it uses odom instead!
   // You can replace pid_drive_set with pid_odom_set and your robot will
   // have better error correction.
@@ -255,9 +334,9 @@ void odom_drive_example() {
 void odom_pure_pursuit_example()
  {
   // Drive to 0, 30 and pass through 6, 10 and 0, 20 on the way, with slew
-  chassis.pid_odom_set({{{0_in, 1_in}, fwd, DRIVE_SPEED},
-                        }
-                       ,true);
+  chassis.pid_odom_set({{{0_in, 24_in}, fwd, DRIVE_SPEED},
+                        {{24_in, 24_in}, fwd, DRIVE_SPEED}},
+                       true);
   chassis.pid_wait();
 
   
