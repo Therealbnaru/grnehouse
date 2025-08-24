@@ -1,6 +1,8 @@
 #include "main.h"
 #include "autons.hpp"
 #include "globals.hpp"
+#include "pros/misc.h"
+#include "pros/rtos.hpp"
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -24,6 +26,88 @@ ez::Drive chassis(
 // - `4.0` is the distance from the center of the wheel to the center of the robot
 ez::tracking_wheel horiz_tracker(11, 2, -.5);  // This tracking wheel is perpendicular to the drive wheels
 ez::tracking_wheel vert_tracker(-17, 2, 0.59);   // This tracking wheel is parallel to the drive wheels
+void blueColorSortOut()
+{
+  
+  double hue = optical_sensorR.get_hue();
+  int proximity = optical_sensorR.get_proximity();
+
+  
+
+  if ((hue >= 180 && hue <= 260)) 
+  {
+      hopper.move(127);
+      intake.move(127);
+      hood.move(127);
+      pros::delay(50);
+      hopper.move(0);
+      hood.move(127);
+      pros::delay(750);
+  }
+
+}
+bool spinCase = true;
+void counter()
+{
+
+}
+void spin_intake() 
+{
+
+  double hue = optical_sensorR.get_hue();
+  ez::screen_print(std::to_string(optical_sensorR.get_hue()), 5);
+  ez::screen_print(std::to_string(optical_sensorR.get_proximity()), 7);
+  /*
+  if ((hue >= 180 && hue <= 260)) 
+  {
+    hopper.move(127);
+    intake.move(127);
+    hood.move(127);
+    pros::delay(100);
+    hopper.move(0);
+    hood.move(127);
+    pros::delay(750);
+  }
+    */
+  if (master.get_digital(DIGITAL_R1)) 
+  { 
+    spinCase = true;
+    redirect.set_value(true);
+    intake.move(127);
+    hood.move(-127);
+    hopper.move(127);
+  } 
+  else if (master.get_digital(DIGITAL_R2)) 
+  {
+    intake.move(127);
+    hood.move(127);
+    hopper.move(127);
+
+  }
+  else if (master.get_digital(DIGITAL_B)) 
+  {
+    spinCase = false;
+    intake.move(0);
+    hood.move(0);
+    hopper.move(0);
+  } 
+  else if(master.get_digital(DIGITAL_A))
+  {
+    hopper.move(127);
+    intake.move(-127);
+  }
+  else 
+  {
+    if(spinCase == true)
+    {
+      redirect.set_value(false);
+      hopper.move(-127);
+      hood.move(-127);
+      intake.move(127);
+    }
+  }
+}
+
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -31,7 +115,11 @@ ez::tracking_wheel vert_tracker(-17, 2, 0.59);   // This tracking wheel is paral
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
+void initialize() 
+{
+  optical_sensorR.set_led_pwm(100);
+  optical_sensorR.set_integration_time(3);
+
   // Print our branding over your terminal :D
   ez::ez_template_print();
 
@@ -59,7 +147,8 @@ void initialize() {
   // chassis.opcontrol_curve_buttons_right_set(pros::E_CONTROLLER_DIGITAL_Y, pros::E_CONTROLLER_DIGITAL_A);
 
   // Autonomous Selector using LLEMU
-  ez::as::auton_selector.autons_add({
+  ez::as::auton_selector.autons_add(
+    {
       {"Drive\n\nDrive forward and come back", drive_example},
       {"Turn\n\nTurn 3 times.", turn_example},
       {"Drive and Turn\n\nDrive forward, turn, come back", drive_and_turn},
@@ -71,7 +160,7 @@ void initialize() {
       {"Simple Odom\n\nThis is the same as the drive example, but it uses odom instead!", odom_drive_example},
       {"Pure Pursuit\n\nGo to (0, 30) and pass through (6, 10) on the way.  Come back to (0, 0)", odom_pure_pursuit_example},
       {"Pure Pursuit Wait Until\n\nGo to (24, 24) but start running an intake once the robot passes (12, 24)", odom_pure_pursuit_wait_until_example},
-      {"Boomerang\n\nGo to (0, 24, 45) then come back to (0, 0, 0)", odom_boomerang_example},
+      {"Boomerang\n\ntGo to (0, 24, 45) then come back to (0, 0, 0)", odom_boomerang_example},
       {"Boomerang Pure Pursuit\n\nGo to (0, 24, 45) on the way to (24, 24) then come back to (0, 0, 0)", odom_boomerang_injected_pure_pursuit_example},
       {"Measure Offsets\n\nThis will turn the robot a bunch of times and calculate your offsets for your tracking wheels.", measure_offsets},
   });
@@ -80,6 +169,15 @@ void initialize() {
   chassis.initialize();
   ez::as::initialize();
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
+
+
+  new pros::Task([&]{
+    while (true) 
+    {
+      spin_intake();
+      pros::delay(10);
+    }
+  });
 }
 
 /**
@@ -87,9 +185,71 @@ void initialize() {
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {
+void disabled() 
+{
   // . . .
 }
+
+
+void redColorSortOut()
+{
+
+}
+
+/*
+void colorSortRed() 
+{
+    static int ejectState = 0;
+    static uint32_t ejectStartTime = 0;
+    const int intakeTime = 200;  // Time to intake after detection (ms)
+    const int waitTime = 170;    // Time to wait before ejecting (ms)
+    const int ejectTime = 400;   // Time to eject (ms)
+
+    if (!intakeActive) 
+    {
+        intake.move(0);
+        ejectState = 0;
+        return;
+    }
+
+    double hue = optical_sensor.get_hue();
+    int proximity = optical_sensor.get_proximity();
+
+    switch (ejectState) {
+        case 0: // Normal operation
+            setIntake(-127); // Intake in
+            if ((hue >= 200 && hue <= 240)) {
+                ejectStartTime = pros::millis();
+                ejectState = 1;
+            }
+            break;
+
+        case 1: // Intake for a bit longer
+            setIntake(-127);
+            if (pros::millis() - ejectStartTime >= intakeTime) {
+                ejectStartTime = pros::millis();
+                ejectState = 2;
+                setIntake(0);
+            }
+            break;
+
+        case 2: // Wait for ring to move up
+            if (pros::millis() - ejectStartTime >= waitTime) {
+                ejectStartTime = pros::millis();
+                ejectState = 3;
+                setIntake(127); // Eject out
+            }
+            break;
+
+        case 3: // Eject the ring
+            if (pros::millis() - ejectStartTime >= ejectTime) {
+                ejectState = 0;
+                setIntake(-127); // Resume intake
+            }
+            break;
+    }
+}
+*/
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
@@ -115,7 +275,8 @@ void competition_initialize() {
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {
+void autonomous() 
+{
   chassis.pid_targets_reset();                // Resets PID targets to 0
   chassis.drive_imu_reset();                  // Reset gyro position to 0
   chassis.drive_sensor_reset();               // Reset drive sensors to 0
@@ -141,7 +302,8 @@ void autonomous() {
 /**
  * Simplifies printing tracker values to the brain screen
  */
-void screen_print_tracker(ez::tracking_wheel *tracker, std::string name, int line) {
+void screen_print_tracker(ez::tracking_wheel *tracker, std::string name, int line) 
+{
   std::string tracker_value = "", tracker_width = "";
   // Check if the tracker exists
   if (tracker != nullptr) {
@@ -156,8 +318,10 @@ void screen_print_tracker(ez::tracking_wheel *tracker, std::string name, int lin
  * Adding new pages here will let you view them during user control or autonomous
  * and will help you debug problems you're having
  */
-void ez_screen_task() {
-  while (true) {
+void ez_screen_task()
+ {
+  while (true) 
+  {
     // Only run this when not connected to a competition switch
     if (!pros::competition::is_connected()) {
       // Blank page for odom debugging
@@ -197,9 +361,11 @@ pros::Task ezScreenTask(ez_screen_task);
  *     is only enabled when you're not connected to competition control.
  * - gives you a GUI to change your PID values live by pressing X
  */
-void ez_template_extras() {
+void ez_template_extras() 
+{
   // Only run this when not connected to a competition switch
-  if (!pros::competition::is_connected()) {
+  if (!pros::competition::is_connected()) 
+  {
     // PID Tuner
     // - after you find values that you're happy with, you'll have to set them in auton.cpp
 
@@ -222,7 +388,8 @@ void ez_template_extras() {
   }
 
   // Disable PID Tuner when connected to a comp switch
-  else {
+  else 
+  {
     if (chassis.pid_tuner_enabled())
       chassis.pid_tuner_disable();
   }
@@ -241,11 +408,17 @@ void ez_template_extras() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-void opcontrol() {
+void opcontrol() 
+{
+  
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
 
-  while (true) {
+  while (true) 
+  {
+    optical_sensorR.set_led_pwm(100);
+    optical_sensorR.set_integration_time(3);
+
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
 
@@ -258,6 +431,13 @@ void opcontrol() {
     // . . .
     // Put more user control code here!
     // . . .
+    /*
+    intake.move(127);
+    hopper.move(-40);
+    hood.move(127);
+    */
+    
+   
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }

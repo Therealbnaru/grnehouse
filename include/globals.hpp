@@ -17,7 +17,9 @@ extern pros::adi::Pneumatics redirect;
 
 
 //Sensors
-extern pros::Optical optical_sensor;
+extern pros::Optical optical_sensorR;
+extern pros::Optical optical_sensorL;
+
 extern pros::Rotation rotation_sensor;
 extern pros::Distance distance_sensor;
 extern pros::adi::DigitalIn limitSwitch;
