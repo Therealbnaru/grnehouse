@@ -70,7 +70,8 @@ using namespace okapi::literals;
  */
 
 #ifdef __cplusplus
-extern "C" {
+extern "C" 
+{
 #endif
 void autonomous(void);
 void initialize(void);

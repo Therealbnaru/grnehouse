@@ -1,4 +1,5 @@
 #include "main.h"
+#include "EZ-Template/util.hpp"
 #include "autons.hpp"
 #include "globals.hpp"
 #include "pros/misc.h"
@@ -46,29 +47,48 @@ void blueColorSortOut()
   }
 
 }
-bool spinCase = true;
 void counter()
 {
 
 }
+bool spinCase = false;
+
+
 void spin_intake() 
 {
 
   double hue = optical_sensorR.get_hue();
   ez::screen_print(std::to_string(optical_sensorR.get_hue()), 5);
   ez::screen_print(std::to_string(optical_sensorR.get_proximity()), 7);
-  /*
-  if ((hue >= 180 && hue <= 260)) 
+  
+  if(alliance == 1)
   {
-    hopper.move(127);
-    intake.move(127);
-    hood.move(127);
-    pros::delay(100);
-    hopper.move(0);
-    hood.move(127);
-    pros::delay(750);
+    if ((hue >= 180 && hue <= 260)  &&  (optical_sensorR.get_proximity() > 85) && ((!master.get_digital(DIGITAL_R1) || !master.get_digital(DIGITAL_A) || !master.get_digital(DIGITAL_R2))))
+    {
+      redirect.set_value(true);
+      hopper.move(127);
+      intake.move(127 );
+      hood.move(127);
+      pros::delay(200);
+      hopper.move(-127);
+      hood.move(127);
+    }
+
   }
-    */
+  else if(alliance == 2)
+  {
+    if ((hue < 10 || hue > 350)  &&  (optical_sensorR.get_proximity() > 85) && ((!master.get_digital(DIGITAL_R1) || !master.get_digital(DIGITAL_A) || !master.get_digital(DIGITAL_R2))))
+    {
+      redirect.set_value(true);
+      hopper.move(127);
+      intake.move(127 );
+      hood.move(127);
+      pros::delay(200);
+      hopper.move(-127);
+      hood.move(127);
+    }
+
+  }
   if (master.get_digital(DIGITAL_R1)) 
   { 
     spinCase = true;
@@ -76,12 +96,15 @@ void spin_intake()
     intake.move(127);
     hood.move(-127);
     hopper.move(127);
+
   } 
   else if (master.get_digital(DIGITAL_R2)) 
   {
+    spinCase = true;
     intake.move(127);
     hood.move(127);
     hopper.move(127);
+
 
   }
   else if (master.get_digital(DIGITAL_B)) 
@@ -90,26 +113,32 @@ void spin_intake()
     intake.move(0);
     hood.move(0);
     hopper.move(0);
+
   } 
+  
   else if(master.get_digital(DIGITAL_A))
   {
+    spinCase = true;
     hopper.move(127);
     intake.move(-127);
   }
-  else 
+
+  else
   {
     if(spinCase == true)
     {
-      redirect.set_value(false);
       hopper.move(-127);
       hood.move(-127);
       intake.move(127);
     }
+    
   }
+  return;
 }
 
 
-/**
+/*
+**
  * Runs initialization code. This occurs as soon as the program is started.
  *
  * All other competition modes are blocked by initialize; it is recommended
@@ -171,9 +200,11 @@ void initialize()
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
 
 
-  new pros::Task([&]{
+  new pros::Task([&]
+    {
     while (true) 
     {
+      //
       spin_intake();
       pros::delay(10);
     }
@@ -260,7 +291,8 @@ void colorSortRed()
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {
+void competition_initialize() 
+{
   // . . .
 }
 
@@ -377,7 +409,8 @@ void ez_template_extras()
       chassis.pid_tuner_toggle();
 
     // Trigger the selected autonomous routine
-    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) {
+    if (master.get_digital(DIGITAL_B) && master.get_digital(DIGITAL_DOWN)) 
+    {
       pros::motor_brake_mode_e_t preference = chassis.drive_brake_get();
       autonomous();
       chassis.drive_brake_set(preference);
@@ -422,20 +455,23 @@ void opcontrol()
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
 
-    chassis.opcontrol_tank();  // Tank control
+    chassis.opcontrol_tank(); 
+    odomPull.set_value(false);
+     // Tank control
     // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
 
     // . . .
-    // Put more user control code here!
-    // . . .
-    /*
-    intake.move(127);
-    hopper.move(-40);
-    hood.move(127);
-    */
+    if (master.get_digital_new_press(DIGITAL_L1)) 
+    {
+      matchLoads.toggle();
+    }
+
+    
+   
+
     
    
 

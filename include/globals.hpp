@@ -15,6 +15,10 @@ extern pros::adi::Pneumatics hoodP;
 extern pros::adi::Pneumatics odomPull;
 extern pros::adi::Pneumatics redirect;
 
+extern pros::adi::Pneumatics trapDoor1;
+extern pros::adi::Pneumatics trapDoor2;
+
+
 
 //Sensors
 extern pros::Optical optical_sensorR;

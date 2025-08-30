@@ -1,3 +1,5 @@
+#include "EZ-Template/util.hpp"
+#include "globals.hpp"
 #include "main.h"
 
 /////
@@ -102,24 +104,63 @@ void drive_example()
 ///
 // Turn Example
 ///
-void turn_example() {
-  // The first parameter is the target in degrees
+void turn_example() 
+{
+  // The first parameter is the target in degrees`````
   // The second parameter is max speed the robot will drive at
-
-  chassis.pid_turn_set(90_deg, TURN_SPEED);
+  hopper.move(-115);
+  hood.move(-115);
+  intake.move(120);
+  chassis.pid_drive_set(50,80,true);
+  chassis.pid_wait_quick();
+  chassis.pid_turn_set({50,59}, fwd,  90);
+  chassis.pid_wait();
+  chassis.pid_drive_set(8_in, 110, true);
+  chassis.pid_wait();
+  chassis.odom_theta_set(90);
+  pros::delay(200);
+  chassis.pid_swing_set(ez::RIGHT_SWING,180,110);
+  chassis.pid_wait();
+  chassis.pid_drive_set(40,110,true);
+  chassis.pid_wait();
+  chassis.pid_turn_set({50,-20}, fwd,  90);
+  chassis.pid_wait(); 
+  matchLoads.set_value(false);
+  chassis.pid_drive_set(20.25,110,true);
+  chassis.pid_wait();
+  chassis.pid_swing_set(ez::LEFT_SWING,180,110);
   chassis.pid_wait();
 
-  chassis.pid_turn_set(45_deg, TURN_SPEED);
-  chassis.pid_wait();
 
-  chassis.pid_turn_set(0_deg, TURN_SPEED);
-  chassis.pid_wait();
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
 }
 
 ///
 // Combining Turn + Drive
 ///
-void drive_and_turn() {
+void drive_and_turn() 
+{
   chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
   chassis.pid_wait();
 
@@ -213,7 +254,8 @@ void motion_chaining() {
 ///
 // Auto that tests everything
 ///
-void combining_movements() {
+void combining_movements() 
+{
   chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
   chassis.pid_wait();
 
@@ -361,7 +403,7 @@ void measure_offsets() {
     chassis.pid_targets_reset();
     chassis.drive_imu_reset();
     chassis.drive_sensor_reset();
-    chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+    //chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
     chassis.odom_xyt_set(0_in, 0_in, 0_deg);
     double imu_start = chassis.odom_theta_get();
     double target = i % 2 == 0 ? 90 : 270;  // Switch the turn target every run from 270 to 90
